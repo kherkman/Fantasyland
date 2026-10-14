@@ -1,0 +1,2571 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Fantasyland</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=MedievalSharp&display=swap');
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      min-height: 100dvh;
+      overflow: hidden;
+      background: #000;
+      font-family: 'MedievalSharp', Georgia, serif;
+      color: #f1dfa8;
+    }
+
+    #app-container {
+      position: relative;
+      width: 100vw;
+      height: 100dvh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #000;
+    }
+
+    /* --- INTRO-RUUTU --- */
+    #intro-screen {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      overflow: hidden;
+      height: 100dvh;
+      padding: max(10px, env(safe-area-inset-top)) 15px max(15px, env(safe-area-inset-bottom));
+    }
+
+    .intro-bg-layer {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      transform-origin: 50% 15%;
+      animation: deepZoomUp 20s infinite alternate ease-in-out;
+      z-index: 1;
+    }
+
+    @keyframes deepZoomUp {
+      0% { transform: scale(1) translateY(0); }
+      100% { transform: scale(2.3) translateY(4%); }
+    }
+
+    .intro-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 30%, rgba(0,0,0,0.1) 20%, rgba(0,0,0,0.88) 100%);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .intro-header {
+      position: relative;
+      z-index: 5;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: 0 1 auto;
+      max-height: 35vh;
+    }
+
+    .curved-title-svg {
+      width: 92vw;
+      max-width: 680px;
+      height: auto;
+      max-height: 28vh;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.95)) drop-shadow(0 0 25px #ff9e00);
+    }
+
+    .curved-title-text {
+      font-family: 'Cinzel Decorative', cursive;
+      font-size: 56px;
+      font-weight: 900;
+      fill: url(#goldGradient);
+      stroke: #241300;
+      stroke-width: 2.5px;
+      letter-spacing: 5px;
+    }
+
+    .intro-bottom {
+      position: relative;
+      z-index: 5;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(8px, 1.8vh, 18px);
+      margin-bottom: max(8px, env(safe-area-inset-bottom));
+      flex-shrink: 0;
+    }
+
+    #loading-indicator {
+      font-size: clamp(0.9rem, 2.8vw, 1.3rem);
+      color: #ffdc73;
+      text-shadow: 0 0 10px #ff9800, 0 2px 4px #000;
+      letter-spacing: 1.5px;
+      text-align: center;
+    }
+
+    .button-group {
+      display: flex;
+      gap: clamp(12px, 3vw, 28px);
+      justify-content: center;
+      width: 100%;
+    }
+
+    .fantasy-btn {
+      position: relative;
+      background: linear-gradient(180deg, #4d2b0e 0%, #201004 100%);
+      border: 2px solid #c99318;
+      box-shadow: inset 0 0 8px #ffd700, 0 5px 15px rgba(0,0,0,0.85);
+      border-radius: 6px;
+      color: #ffebaa;
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(1rem, 3.2vw, 1.35rem);
+      font-weight: 700;
+      padding: clamp(8px, 1.6vh, 14px) clamp(18px, 4vw, 36px);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: all 0.2s ease;
+      text-shadow: 0 2px 4px #000;
+    }
+
+    .fantasy-btn:hover:not(:disabled) {
+      transform: translateY(-2px) scale(1.03);
+      border-color: #ffe666;
+      box-shadow: inset 0 0 14px #fffaad, 0 8px 20px rgba(255, 180, 0, 0.45);
+      color: #fff;
+    }
+
+    .fantasy-btn:disabled {
+      background: #2b2b2b !important;
+      border-color: #555 !important;
+      color: #777 !important;
+      box-shadow: none !important;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* --- PELI-RUUTU --- */
+    #game-screen {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: none;
+      background: #000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #gameCanvas {
+      aspect-ratio: 1 / 1;
+      width: min(100vw, 100dvh);
+      height: min(100vw, 100dvh);
+      max-width: 100vw;
+      max-height: 100dvh;
+      display: block;
+      cursor: crosshair;
+      background: #000;
+      box-shadow: 0 0 35px rgba(0,0,0,0.95);
+    }
+
+    .game-exit-btn {
+      position: absolute;
+      top: max(12px, env(safe-area-inset-top));
+      left: max(12px, env(safe-area-inset-left));
+      z-index: 60;
+      background: rgba(30, 16, 8, 0.85);
+      border: 1.5px solid #c99318;
+      color: #ffda73;
+      padding: 6px 14px;
+      font-size: 0.95rem;
+      font-family: 'MedievalSharp', serif;
+      border-radius: 4px;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.7);
+    }
+
+    .game-coin-counter {
+      position: absolute;
+      top: max(12px, env(safe-area-inset-top));
+      right: max(12px, env(safe-area-inset-right));
+      z-index: 60;
+      background: rgba(30, 16, 8, 0.9);
+      border: 1.5px solid #ffd700;
+      color: #ffe666;
+      padding: 6px 16px;
+      font-size: 1.15rem;
+      font-family: 'MedievalSharp', serif;
+      font-weight: bold;
+      border-radius: 6px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.8), inset 0 0 6px rgba(255, 215, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #fullscreen-video-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 80;
+      background: #000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #fullscreen-video-overlay video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .skip-cutscene-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      z-index: 90;
+      background: rgba(40, 20, 10, 0.9);
+      border: 2px solid #ffcc00;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    #screen-fade {
+      position: absolute;
+      inset: 0;
+      background: #000;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.45s ease-in-out;
+      z-index: 100;
+    }
+
+    /* --- EDIT-RUUTU --- */
+    #edit-screen {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      background: rgba(14, 10, 8, 0.98);
+      display: none;
+      flex-direction: column;
+      padding: 10px;
+      overflow-y: auto;
+    }
+
+    .edit-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      background: #22140a;
+      padding: 10px;
+      border: 1px solid #7d5722;
+      border-radius: 6px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .stage-tabs-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      max-height: 85px;
+      overflow-y: auto;
+      max-width: 60%;
+    }
+
+    .tab-btn {
+      background: #392211;
+      border: 1px solid #996e2e;
+      color: #f0cb88;
+      padding: 5px 10px;
+      font-family: inherit;
+      cursor: pointer;
+      font-size: 0.85rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      background: #945d1d;
+      color: #fff;
+      font-weight: bold;
+      border-color: #ffd700;
+    }
+
+    .edit-body {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 12px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    @media (max-width: 950px) {
+      .edit-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      background: #050505;
+      border: 2px solid #5a3d16;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      min-height: 340px;
+      border-radius: 4px;
+    }
+
+    #editCanvas {
+      aspect-ratio: 1 / 1;
+      width: min(100%, 78vh);
+      height: min(100%, 78vh);
+      max-width: 100%;
+      max-height: 100%;
+      cursor: crosshair;
+      box-shadow: 0 0 25px rgba(0,0,0,0.85);
+      background: #000;
+      touch-action: none;
+    }
+
+    .tool-panel {
+      background: #1c120a;
+      border: 1px solid #6b451b;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-radius: 6px;
+      overflow-y: auto;
+      max-height: 80vh;
+    }
+
+    .tool-section {
+      border-bottom: 1px solid #3c2713;
+      padding-bottom: 10px;
+    }
+
+    .tool-section h3 {
+      font-size: 0.98rem;
+      color: #ffcb77;
+      margin-bottom: 8px;
+    }
+
+    .tool-btn {
+      width: 100%;
+      background: #3d2410;
+      border: 1px solid #996929;
+      color: #ffd899;
+      padding: 8px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      transition: background 0.2s;
+      text-align: center;
+    }
+
+    .tool-btn:hover {
+      background: #5c3716;
+    }
+
+    .tool-btn.active {
+      background: #b36b1d;
+      color: #fff;
+      font-weight: bold;
+      border-color: #ffe066;
+    }
+
+    .range-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.82rem;
+      margin-bottom: 8px;
+    }
+
+    .range-group input[type="range"], .range-group input[type="number"], .range-group input[type="text"] {
+      width: 100%;
+      accent-color: #e09838;
+      background: #170d05;
+      color: #ffe0a3;
+      border: 1px solid #6b451b;
+      padding: 4px 6px;
+      border-radius: 3px;
+      font-family: inherit;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .item-list-box {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 130px;
+      overflow-y: auto;
+    }
+
+    .path-item {
+      background: #2b1a0c;
+      border: 1px solid #603f19;
+      padding: 6px;
+      font-size: 0.8rem;
+      border-radius: 3px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .path-item.selected {
+      border-color: #ffc107;
+      background: #3d2410;
+    }
+
+    .path-item select, .path-item input {
+      background: #170d05;
+      color: #ffe0a3;
+      border: 1px solid #6b451b;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: inherit;
+    }
+
+    #charModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 100;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+
+    .char-modal-box {
+      background: #22140a;
+      border: 2px solid #b8860b;
+      border-radius: 8px;
+      padding: 18px;
+      max-width: 480px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 0 25px rgba(0,0,0,0.9);
+      color: #ffebb0;
+    }
+
+    .char-modal-box label {
+      font-size: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .char-modal-box input, .char-modal-box select, .char-modal-box textarea {
+      background: #120904;
+      border: 1px solid #7a4f21;
+      color: #fffae8;
+      padding: 6px;
+      border-radius: 4px;
+      font-family: inherit;
+    }
+  </style>
+  <script src="default.js"></script>
+</head>
+<body>
+
+<div id="app-container">
+  <!-- 1. INTRO SCREEN -->
+  <div id="intro-screen">
+    <div id="intro-bg" class="intro-bg-layer"></div>
+    <div class="intro-overlay"></div>
+
+    <div class="intro-header">
+      <svg class="curved-title-svg" viewBox="0 0 800 200">
+        <defs>
+          <linearGradient id="goldGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#fff8d6" />
+            <stop offset="30%" stop-color="#ffd54f" />
+            <stop offset="70%" stop-color="#d48806" />
+            <stop offset="100%" stop-color="#6e3900" />
+          </linearGradient>
+          <path id="curvePath" d="M 60,165 Q 400,-15 740,165" />
+        </defs>
+        <text>
+          <textPath href="#curvePath" startOffset="50%" text-anchor="middle" class="curved-title-text">
+            Fantasyland
+          </textPath>
+        </text>
+      </svg>
+    </div>
+
+    <div class="intro-bottom">
+      <div id="loading-indicator">Ladataan resursseja...</div>
+      <div class="button-group">
+        <button id="playBtn" class="fantasy-btn" disabled>Play</button>
+        <button id="editBtn" class="fantasy-btn">Edit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. GAME SCREEN -->
+  <div id="game-screen">
+    <button id="gameExitBtn" class="game-exit-btn">← Exit</button>
+    <div id="coinCounter" class="game-coin-counter">🪙 0</div>
+    <canvas id="gameCanvas" width="1000" height="1000"></canvas>
+  </div>
+
+  <!-- Fullscreen cutscenes -->
+  <div id="fullscreen-video-overlay">
+    <button id="skipCutsceneBtn" class="skip-cutscene-btn">Skip ✕</button>
+    <video id="fsVideo" playsinline muted></video>
+  </div>
+
+  <!-- 3. EDIT SCREEN -->
+  <div id="edit-screen">
+    <div class="edit-toolbar">
+      <div class="stage-tabs-container">
+        <div id="stageTabsList" style="display:flex; gap:5px; flex-wrap:wrap;"></div>
+        <button id="addStageBtn" class="tab-btn" style="background:#204f21; border-color:#59af5b;">➕ Add Stage</button>
+        <button id="removeStageBtn" class="tab-btn" style="background:#5c1e1e; border-color:#9f3c3c;">➖ Remove Stage</button>
+      </div>
+
+      <div style="display:flex; gap: 8px; flex-wrap: wrap;">
+        <div class="file-input-wrapper" style="width:auto;">
+          <button class="tool-btn" style="background:#4a2b10; margin:0;">📁 Valitse Asset-kansio</button>
+          <input type="file" id="assetFolderInput" webkitdirectory directory multiple>
+        </div>
+        <button id="saveSettingsBtn" class="tool-btn" style="background:#1d471b; border-color:#489c46; margin:0; width:auto;">💾 Tallenna JS</button>
+        <div class="file-input-wrapper" style="width:auto;">
+          <button class="tool-btn" style="background:#173444; border-color:#4282a8; margin:0;">📂 Lataa JS</button>
+          <input type="file" id="loadSettingsInput" accept=".js">
+        </div>
+        <button id="exitEditBtn" class="tool-btn" style="background:#701d1d; border-color:#b53c3c; margin:0; width:auto;">✕ Sulje Edit</button>
+      </div>
+    </div>
+
+    <div class="edit-body">
+      <div class="canvas-wrapper">
+        <canvas id="editCanvas" width="1000" height="1000"></canvas>
+      </div>
+
+      <div class="tool-panel">
+        <div class="tool-section">
+          <h3>Kentän Asetukset</h3>
+          <div class="range-group">
+            <label>Kentän Nimi:</label>
+            <input type="text" id="stageNameInput" value="Stage 1">
+          </div>
+          <div class="file-input-wrapper">
+            <button class="tool-btn" style="background:#4a3212; border-color:#aa7b38;">🖼️ Load Stage Background</button>
+            <input type="file" id="loadStageBgInput" accept="image/jpeg,image/png,image/webp">
+          </div>
+        </div>
+
+        <div class="tool-section">
+          <h3>Maalaustyökalut</h3>
+          <button id="paintMoveBtn" class="tool-btn">Paint move area (Vihreä)</button>
+          <button id="clearMoveBtn" class="tool-btn" style="background:#4a1e1e;">🗑️ Tyhjennä Move-alue</button>
+          <button id="paintInvisBtn" class="tool-btn">Paint invisible area (Sininen)</button>
+          <button id="eraseBtn" class="tool-btn">Kumi (Pyyhi)</button>
+          <div class="range-group">
+            <label>Siveltimen koko: <span id="brushSizeVal">35</span>px</label>
+            <input type="range" id="brushSize" min="6" max="180" value="35">
+          </div>
+        </div>
+
+        <div class="tool-section">
+          <h3>Pelihahmon Perspektiivi</h3>
+          <div class="range-group">
+            <label>Ylhäällä: <span id="scaleTopVal">0.6</span>x</label>
+            <input type="range" id="scaleTop" min="0.1" max="2.5" step="0.05" value="0.6">
+          </div>
+          <div class="range-group">
+            <label>Alhaalla: <span id="scaleBottomVal">1.3</span>x</label>
+            <input type="range" id="scaleBottom" min="0.2" max="3.5" step="0.05" value="1.3">
+          </div>
+        </div>
+
+        <!-- Hahmot Kentällä -->
+        <div class="tool-section">
+          <h3>Hahmot Kentällä (Characters)</h3>
+          <div class="range-group">
+            <label>Hahmojen koko tällä kentällä: <span id="stageCharScaleVal">1.0</span>x</label>
+            <input type="range" id="stageCharScale" min="0.2" max="3.0" step="0.05" value="1.0">
+          </div>
+          
+          <button id="addCharBtn" class="tool-btn" style="background:#2a4521;">➕ Add Character</button>
+          <button id="moveCharBtn" class="tool-btn">✋ Move Character</button>
+          <button id="flipCharBtn" class="tool-btn">🔄 Mirror Flip Character</button>
+          <button id="removeCharBtn" class="tool-btn" style="background:#522020;">➖ Remove Character</button>
+          
+          <div id="selectedCharBox" style="display:none; margin-top:8px; border-top:1px dashed #6b451b; padding-top:6px;">
+            <div class="range-group">
+              <label>Valitun hahmon erillinen koko: <span id="charScaleVal">1.0</span>x</label>
+              <input type="range" id="charScale" min="0.2" max="3.0" step="0.05" value="1.0">
+            </div>
+            
+            <div id="ogreAnimSizeGroup" class="range-group" style="display:none;">
+              <label>Taisteluanimaation koko (ogrefight.mp4): <span id="ogreAnimSizeVal">320</span>px</label>
+              <input type="range" id="ogreAnimSize" min="120" max="800" step="10" value="320">
+            </div>
+
+            <div id="charTextEditGroup" class="range-group" style="display:none;">
+              <label>Puheteksti:</label>
+              <input type="text" id="charTextInput" value="">
+            </div>
+          </div>
+
+          <div id="charList" class="item-list-box" style="font-size:0.8rem; margin-top:5px; color:#ffdd99;"></div>
+        </div>
+
+        <!-- Kolikkopussit (Coin Bags) -->
+        <div class="tool-section">
+          <h3>Kolikkopussit (Coin Bags)</h3>
+          <button id="addCoinBagBtn" class="tool-btn" style="background:#614a13; border-color:#d4af37;">➕ Add Coin Bag</button>
+          <button id="moveCoinBagBtn" class="tool-btn">✋ Move Coin Bag</button>
+          <button id="removeCoinBagBtn" class="tool-btn" style="background:#522020;">➖ Remove Coin Bag</button>
+
+          <div id="selectedCoinBagBox" style="display:none; margin-top:8px; border-top:1px dashed #6b451b; padding-top:6px;">
+            <div class="range-group">
+              <label>Valitun pussin kolikot:</label>
+              <input type="number" id="coinBagAmountInput" min="1" max="999" value="44">
+            </div>
+          </div>
+
+          <div id="coinBagList" class="item-list-box" style="font-size:0.8rem; margin-top:5px; color:#ffe680;"></div>
+        </div>
+
+        <!-- Reunasiirtymät -->
+        <div class="tool-section">
+          <h3>Reunasiirtymät (Path Boxes)</h3>
+          <button id="movePathBtn" class="tool-btn">✋ Move Path Boxes (Siirrä)</button>
+          <button id="addPathBtn" class="tool-btn">➕ Add Path Box</button>
+          <button id="removePathBtn" class="tool-btn">➖ Remove Path Box</button>
+          
+          <div id="boxSizeControls" style="display:none; margin-top:8px; border-top:1px dashed #5a3d16; padding-top:6px;">
+            <div class="range-group">
+              <label>Valitun Boxin Leveys: <span id="boxWidthVal">80</span>px</label>
+              <input type="range" id="boxWidth" min="20" max="600" value="80">
+            </div>
+            <div class="range-group">
+              <label>Valitun Boxin Korkeus: <span id="boxHeightVal">200</span>px</label>
+              <input type="range" id="boxHeight" min="20" max="600" value="200">
+            </div>
+          </div>
+
+          <div class="item-list-box" id="pathBoxesList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD CHARACTER MODAL -->
+  <div id="charModal">
+    <div class="char-modal-box">
+      <h3 style="color:#ffd700;">Lisää uusi hahmo kentälle</h3>
+      
+      <label>
+        Hahmon tyyppi:
+        <select id="modalCharType">
+          <option value="npc">Sivuhahmo (NPC)</option>
+          <option value="enemy">Vihollinen (Enemy)</option>
+        </select>
+      </label>
+
+      <label>
+        Valitse esiasetettu tai oma:
+        <select id="modalPresetSelect">
+          <option value="custom">Oma tiedosto...</option>
+          <option value="peasant1">peasant1.jpg</option>
+          <option value="peasant2">peasant2.jpg</option>
+          <option value="peasant3">peasant3.jpg</option>
+          <option value="spirit">spirit.jpg</option>
+          <option value="lady">lady.mp4</option>
+          <option value="wizard">wizard.jpg</option>
+          <option value="ogre">ogre.mp4</option>
+          <option value="king">king.jpg</option>
+        </select>
+      </label>
+
+      <label id="modalIdleFileLabel">
+        Idle-tiedosto (kuva/video):
+        <input type="file" id="modalIdleFileInput" accept="image/*,video/mp4">
+      </label>
+
+      <div id="modalNpcFields">
+        <label>
+          Puheteksti lähellä ollessa:
+          <textarea id="modalNpcText" rows="2">Please, save the kingdom!</textarea>
+        </label>
+      </div>
+
+      <div id="modalEnemyFields" style="display:none;">
+        <label>
+          Hyökkäysanimaatio (mp4):
+          <input type="file" id="modalAttackFileInput" accept="video/mp4">
+          <small style="color:#aaa;">Oletus: ogrefight.mp4</small>
+        </label>
+        <label>
+          Taisteluanimaation koko (px):
+          <input type="number" id="modalEnemyFightSize" value="320">
+        </label>
+        <label>
+          Kuolemiskuva/-animaatio (jpg/mp4):
+          <input type="file" id="modalDeathFileInput" accept="image/*,video/mp4">
+          <small style="color:#aaa;">Oletus: deadogre.jpg</small>
+        </label>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+        <button id="modalCancelBtn" class="tool-btn" style="width:auto;">Peruuta</button>
+        <button id="modalSaveBtn" class="tool-btn" style="background:#205220; width:auto;">Lisää Hahmo</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-fade"></div>
+</div>
+
+<audio id="bgMusic" loop src="music.mp3"></audio>
+
+<script>
+/**
+ * FANTASYLAND ENGINE & EDITOR
+ */
+const STAGE_SIZE = 1000;
+
+const ASSET_NAMES = [
+  'intro.jpg', 'music.mp3',
+  'stage1.jpg', 'stage2.jpg', 'stage3.jpg', 'stage4.jpg', 'stage5.jpg', 'stage5-store.jpg', 'stage6.jpg', 'stage6-store.jpg',
+  'stage7.jpg', 'stage7-house.jpg', 'stage8.jpg', 'stage9.jpg', 'stage10.jpg', 'stage11.jpg', 'stage12.jpg', 'stage13.jpg',
+  'playerstandfront.jpg', 'playerstandback.jpg', 'playerstandside.jpg',
+  'playerwalkfront.mp4', 'playerwalkback.mp4', 'playerwalkside.mp4',
+  'peasant1.jpg', 'peasant2.jpg', 'peasant3.jpg', 'spirit.jpg', 'lady.mp4', 'wizard.jpg',
+  'ogre.mp4', 'king.jpg', 'ogrefight.mp4', 'deadogre.jpg', 'kingthanks.mp4',
+  'coins.jpg'
+];
+
+const assets = {
+  images: {},
+  videos: {},
+  audio: null
+};
+
+function createMaskCanvas(fillColor = null) {
+  const c = document.createElement('canvas');
+  c.width = STAGE_SIZE;
+  c.height = STAGE_SIZE;
+  const ctx = c.getContext('2d');
+  if (fillColor) {
+    ctx.fillStyle = fillColor;
+    ctx.fillRect(0, 0, STAGE_SIZE, STAGE_SIZE);
+  }
+  return c;
+}
+
+function createStageData(idName, displayName) {
+  const moveMask = createMaskCanvas();
+  const mctx = moveMask.getContext('2d');
+  mctx.fillStyle = '#00ff44';
+  mctx.fillRect(80, 280, STAGE_SIZE - 160, STAGE_SIZE - 360);
+
+  return {
+    id: idName,
+    name: displayName,
+    bgKey: `${idName}.jpg`,
+    customBg: null,
+    moveMask: moveMask,
+    invisMask: createMaskCanvas(),
+    scaleTop: 0.6,
+    scaleBottom: 1.3,
+    charScale: 1.0,
+    pathBoxes: [],
+    characters: [],
+    coinBags: [] // [{id, x, y, amount, collected}]
+  };
+}
+
+const STAGE_CONFIGS = [
+  { id: 'stage1', name: 'Stage 1' },
+  { id: 'stage2', name: 'Stage 2' },
+  { id: 'stage3', name: 'Stage 3' },
+  { id: 'stage4', name: 'Stage 4' },
+  { id: 'stage5', name: 'Stage 5' },
+  { id: 'stage5-store', name: 'Stage 5 Store' },
+  { id: 'stage6', name: 'Stage 6' },
+  { id: 'stage6-store', name: 'Stage 6 Store' },
+  { id: 'stage7', name: 'Stage 7' },
+  { id: 'stage7-house', name: 'Stage 7 House' },
+  { id: 'stage8', name: 'Stage 8' },
+  { id: 'stage9', name: 'Stage 9' },
+  { id: 'stage10', name: 'Stage 10' },
+  { id: 'stage11', name: 'Stage 11' },
+  { id: 'stage12', name: 'Stage 12' },
+  { id: 'stage13', name: 'Stage 13' }
+];
+
+let stages = [];
+let currentStageIndex = 0;
+
+function setupDefaultStages() {
+  stages = STAGE_CONFIGS.map(cfg => createStageData(cfg.id, cfg.name));
+  const getIdx = (id) => stages.findIndex(s => s.id === id);
+
+  const chain = ['stage1','stage2','stage3','stage4','stage5','stage6','stage7','stage8','stage9','stage10','stage11','stage12','stage13'];
+  for (let i = 0; i < chain.length - 1; i++) {
+    const fromIdx = getIdx(chain[i]);
+    const toIdx = getIdx(chain[i+1]);
+    const boxIdRight = (i + 1) * 10;
+    const boxIdLeft = (i + 1) * 10 + 1;
+
+    stages[fromIdx].pathBoxes.push({
+      id: boxIdRight,
+      x: 900, y: 380, w: 90, h: 220,
+      targetStage: toIdx,
+      targetBoxId: boxIdLeft
+    });
+
+    stages[toIdx].pathBoxes.push({
+      id: boxIdLeft,
+      x: 10, y: 380, w: 90, h: 220,
+      targetStage: fromIdx,
+      targetBoxId: boxIdRight
+    });
+  }
+
+  // Erikoisreitit
+  const s5Idx = getIdx('stage5'), s5StoreIdx = getIdx('stage5-store');
+  stages[s5Idx].pathBoxes.push({ id: 501, x: 450, y: 220, w: 100, h: 120, targetStage: s5StoreIdx, targetBoxId: 502 });
+  stages[s5StoreIdx].pathBoxes.push({ id: 502, x: 450, y: 880, w: 120, h: 80, targetStage: s5Idx, targetBoxId: 501 });
+
+  const s6Idx = getIdx('stage6'), s6StoreIdx = getIdx('stage6-store');
+  stages[s6Idx].pathBoxes.push({ id: 601, x: 450, y: 220, w: 100, h: 120, targetStage: s6StoreIdx, targetBoxId: 602 });
+  stages[s6StoreIdx].pathBoxes.push({ id: 602, x: 450, y: 880, w: 120, h: 80, targetStage: s6Idx, targetBoxId: 601 });
+
+  const s7Idx = getIdx('stage7'), houseIdx = getIdx('stage7-house');
+  stages[s7Idx].pathBoxes.push({ id: 701, x: 500, y: 240, w: 100, h: 120, targetStage: houseIdx, targetBoxId: 702 });
+  stages[houseIdx].pathBoxes.push({ id: 702, x: 450, y: 880, w: 120, h: 80, targetStage: s7Idx, targetBoxId: 701 });
+
+  const s10Idx = getIdx('stage10'), s8Idx = getIdx('stage8');
+  stages[s10Idx].pathBoxes.push({ id: 1081, x: 450, y: 30, w: 120, h: 70, targetStage: s8Idx, targetBoxId: 1082 });
+  stages[s8Idx].pathBoxes.push({ id: 1082, x: 450, y: 890, w: 120, h: 80, targetStage: s10Idx, targetBoxId: 1081 });
+
+  // Oletushahmot
+  stages[getIdx('stage1')].characters.push({
+    id: 'char_p1', type: 'npc', name: 'Peasant 1',
+    x: 400, y: 550, mediaKey: 'peasant1.jpg', customMedia: null,
+    isVideo: false, flipped: false, scale: 1.0,
+    text: 'I heard there is an ogre in the castle.'
+  });
+
+  stages[getIdx('stage2')].characters.push({
+    id: 'char_p2', type: 'npc', name: 'Peasant 2',
+    x: 600, y: 600, mediaKey: 'peasant2.jpg', customMedia: null,
+    isVideo: false, flipped: false, scale: 1.0,
+    text: 'Please, save the king!'
+  });
+
+  stages[getIdx('stage3')].characters.push({
+    id: 'char_p3', type: 'npc', name: 'Peasant 3',
+    x: 500, y: 500, mediaKey: 'peasant3.jpg', customMedia: null,
+    isVideo: false, flipped: false, scale: 1.0,
+    text: 'Can you help the kingdom?'
+  });
+
+  // Uudet hahmot
+  stages[getIdx('stage6-store')].characters.push({
+    id: 'char_lady', type: 'npc', name: 'Lady',
+    x: 500, y: 520, mediaKey: 'lady.mp4', customMedia: null,
+    isVideo: true, flipped: false, scale: 1.0,
+    text: 'Collecting taxes again?'
+  });
+
+  stages[getIdx('stage9')].characters.push({
+    id: 'char_spirit', type: 'npc', name: 'Spirit',
+    x: 480, y: 520, mediaKey: 'spirit.jpg', customMedia: null,
+    isVideo: false, flipped: false, scale: 1.0,
+    text: 'There is too much evil.'
+  });
+
+  stages[getIdx('stage11')].characters.push({
+    id: 'char_wizard', type: 'npc', name: 'Wizard',
+    x: 520, y: 520, mediaKey: 'wizard.jpg', customMedia: null,
+    isVideo: false, flipped: false, scale: 1.0,
+    text: 'The king wants his 200 coins.'
+  });
+
+  stages[getIdx('stage12')].characters.push({
+    id: 'char_ogre', type: 'enemy', name: 'Ogre',
+    x: 750, y: 550, mediaKey: 'ogre.mp4', customMedia: null,
+    isVideo: true, flipped: false, scale: 1.0,
+    attackKey: 'ogrefight.mp4', deathKey: 'deadogre.jpg',
+    fightSize: 320,
+    state: 'idle'
+  });
+
+  stages[getIdx('stage13')].characters.push({
+    id: 'char_king', type: 'king', name: 'King',
+    x: 680, y: 460, mediaKey: 'king.jpg', customMedia: null,
+    isVideo: false, flipped: false, scale: 1.0,
+    text: 'Good job. Did you get my gold?'
+  });
+
+  // Kolikkopussit: stage3, stage5, stage5-store, stage7-house, stage10
+  stages[getIdx('stage3')].coinBags.push({ id: 'bag_s3', x: 520, y: 620, amount: 44, collected: false });
+  stages[getIdx('stage5')].coinBags.push({ id: 'bag_s5', x: 480, y: 550, amount: 44, collected: false });
+  stages[getIdx('stage5-store')].coinBags.push({ id: 'bag_s5s', x: 500, y: 500, amount: 44, collected: false });
+  stages[getIdx('stage7-house')].coinBags.push({ id: 'bag_s7h', x: 500, y: 520, amount: 44, collected: false });
+  stages[getIdx('stage10')].coinBags.push({ id: 'bag_s10', x: 500, y: 500, amount: 44, collected: false });
+}
+
+setupDefaultStages();
+
+// Pelihahmo
+const player = {
+  x: 200,
+  y: 650,
+  targetX: 200,
+  targetY: 650,
+  speed: 4.8,
+  facing: 'front',
+  isMoving: false,
+  warpCooldownUntil: 0,
+  entryGraceUntil: 0,
+  hidden: false,
+  coins: 0
+};
+
+// Editoritila
+const editState = {
+  mode: null, // 'move', 'invis', 'erase', 'movePath', 'moveChar', 'moveCoin'
+  brushSize: 35,
+  isInteracting: false,
+  lastDrawX: 0,
+  lastDrawY: 0,
+  draggedBox: null,
+  selectedBox: null,
+  draggedChar: null,
+  selectedChar: null,
+  draggedCoinBag: null,
+  selectedCoinBag: null,
+  dragOffset: { x: 0, y: 0 }
+};
+
+// --- CHROMA KEY ---
+function removeWhiteFromCanvas(ctx, width, height, threshold = 225) {
+  const imgData = ctx.getImageData(0, 0, width, height);
+  const data = imgData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i] >= threshold && data[i + 1] >= threshold && data[i + 2] >= threshold) {
+      data[i + 3] = 0;
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+}
+
+function processImageWhiteRemoval(img) {
+  const c = document.createElement('canvas');
+  c.width = img.naturalWidth || img.width || 200;
+  c.height = img.naturalHeight || img.height || 200;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  removeWhiteFromCanvas(ctx, c.width, c.height);
+  return c;
+}
+
+const scratchCanvas = document.createElement('canvas');
+const scratchCtx = scratchCanvas.getContext('2d', { willReadFrequently: true });
+
+function generatePlaceholderCanvas(text, color, w = STAGE_SIZE, h = STAGE_SIZE) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#fff';
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 3;
+  ctx.font = 'bold 36px Georgia';
+  ctx.textAlign = 'center';
+  ctx.strokeText(text, w / 2, h / 2);
+  ctx.fillText(text, w / 2, h / 2);
+  return c;
+}
+
+// Kolikkopussin varakuvake
+function generateCoinBagPlaceholder() {
+  const c = document.createElement('canvas');
+  c.width = 64; c.height = 64;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#d4af37';
+  ctx.beginPath();
+  ctx.ellipse(32, 40, 24, 20, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#8b6914';
+  ctx.fillRect(24, 16, 16, 10);
+  ctx.fillStyle = '#ffeb3b';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('$', 32, 45);
+  return c;
+}
+
+// --- RESURSSIEN LATAUS ---
+let loadedCount = 0;
+const totalAssetsNeeded = ASSET_NAMES.length;
+
+function checkAllAssetsLoaded() {
+  const playBtn = document.getElementById('playBtn');
+  const loadingIndicator = document.getElementById('loading-indicator');
+  if (loadedCount >= totalAssetsNeeded) {
+    loadingIndicator.textContent = "Kaikki valmiina seikkailuun!";
+    loadingIndicator.style.color = "#85ff85";
+    playBtn.disabled = false;
+  } else {
+    loadingIndicator.textContent = `Ladataan resursseja (${loadedCount}/${totalAssetsNeeded})...`;
+  }
+}
+
+function registerAssetFile(name, url) {
+  if (name === 'music.mp3') {
+    const audio = document.getElementById('bgMusic');
+    audio.src = url;
+    assets.audio = audio;
+    loadedCount++;
+    checkAllAssetsLoaded();
+  } else if (name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png') || name.endsWith('.webp')) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      if (name.startsWith('playerstand') || name.startsWith('peasant') || name.startsWith('king') || name.startsWith('deadogre') || name === 'coins.jpg' || name === 'spirit.jpg' || name === 'wizard.jpg') {
+        assets.images[name] = processImageWhiteRemoval(img);
+      } else {
+        assets.images[name] = img;
+        if (name === 'intro.jpg') {
+          document.getElementById('intro-bg').style.backgroundImage = `url(${url})`;
+        }
+      }
+      loadedCount++;
+      checkAllAssetsLoaded();
+    };
+    img.onerror = () => {
+      if (name === 'coins.jpg') {
+        assets.images[name] = generateCoinBagPlaceholder();
+      } else {
+        assets.images[name] = generatePlaceholderCanvas(name, '#2d1808');
+      }
+      loadedCount++;
+      checkAllAssetsLoaded();
+    };
+    img.src = url;
+  } else if (name.endsWith('.mp4')) {
+    const video = document.createElement('video');
+    video.src = url;
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.onloadeddata = () => {
+      video.play().catch(()=>{});
+      assets.videos[name] = video;
+      loadedCount++;
+      checkAllAssetsLoaded();
+    };
+    video.onerror = () => {
+      assets.videos[name] = null;
+      loadedCount++;
+      checkAllAssetsLoaded();
+    };
+    video.load();
+  }
+}
+
+function tryLoadInitialAssets() {
+  ASSET_NAMES.forEach(file => registerAssetFile(file, file));
+}
+
+document.getElementById('assetFolderInput').addEventListener('change', (e) => {
+  const files = e.target.files;
+  if (!files || files.length === 0) return;
+  loadedCount = 0;
+  for (let file of files) {
+    const name = file.name.toLowerCase();
+    if (ASSET_NAMES.includes(name)) {
+      registerAssetFile(name, URL.createObjectURL(file));
+    }
+  }
+});
+
+document.getElementById('loadStageBgInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const img = new Image();
+  img.onload = () => {
+    stages[currentStageIndex].customBg = img;
+    renderEditor();
+  };
+  img.src = URL.createObjectURL(file);
+});
+
+// --- TIUKKA MOVE-ALUEEN TARKISTUS ---
+function isWalkable(x, y, stage) {
+  if (x < 15 || x >= STAGE_SIZE - 15 || y < 15 || y >= STAGE_SIZE - 15) return false;
+  if (!stage.moveMask) return false;
+  const ctx = stage.moveMask.getContext('2d');
+  const p = ctx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
+  if (p[3] < 80) return false;
+  const isGreen = (p[1] > 130 && p[0] < 120);
+  const isWhite = (p[0] > 180 && p[1] > 180 && p[2] > 180);
+  return (isGreen || isWhite);
+}
+
+function getNearestWalkableOnStage(startX, startY, stage) {
+  if (isWalkable(startX, startY, stage)) return { x: startX, y: startY };
+  for (let r = 4; r < STAGE_SIZE; r += 6) {
+    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 16) {
+      const testX = Math.round(startX + Math.cos(angle) * r);
+      const testY = Math.round(startY + Math.sin(angle) * r);
+      if (isWalkable(testX, testY, stage)) {
+        return { x: testX, y: testY };
+      }
+    }
+  }
+  return { x: startX, y: startY };
+}
+
+function getTargetAlongPath(fromX, fromY, toX, toY, stage) {
+  const dx = toX - fromX;
+  const dy = toY - fromY;
+  const dist = Math.hypot(dx, dy);
+  if (dist === 0) return { x: fromX, y: fromY };
+
+  const stepSize = 3;
+  const steps = Math.floor(dist / stepSize);
+  let lastSafeX = fromX;
+  let lastSafeY = fromY;
+
+  for (let i = 1; i <= steps; i++) {
+    const curX = fromX + (dx / dist) * (i * stepSize);
+    const curY = fromY + (dy / dist) * (i * stepSize);
+    if (isWalkable(curX, curY, stage)) {
+      lastSafeX = curX;
+      lastSafeY = curY;
+    } else {
+      return { x: lastSafeX, y: lastSafeY };
+    }
+  }
+
+  if (isWalkable(toX, toY, stage)) return { x: toX, y: toY };
+  return { x: lastSafeX, y: lastSafeY };
+}
+
+const gameCanvas = document.getElementById('gameCanvas');
+const gCtx = gameCanvas.getContext('2d');
+const screenFade = document.getElementById('screen-fade');
+
+function fadeTransition(callback) {
+  screenFade.style.opacity = '1';
+  setTimeout(() => {
+    callback();
+    setTimeout(() => {
+      screenFade.style.opacity = '0';
+    }, 150);
+  }, 450);
+}
+
+function getStageBg(stage) {
+  return stage.customBg || assets.images[stage.bgKey] || null;
+}
+
+function updateCoinCounterUI() {
+  document.getElementById('coinCounter').textContent = `🪙 ${player.coins}`;
+}
+
+function handleGamePointer(e) {
+  if (activeFight || activeKingCutscene) return;
+  const rect = gameCanvas.getBoundingClientRect();
+  const scale = STAGE_SIZE / rect.width;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const clickX = (clientX - rect.left) * scale;
+  const clickY = (clientY - rect.top) * scale;
+
+  const validTarget = getTargetAlongPath(player.x, player.y, clickX, clickY, stages[currentStageIndex]);
+  if (isWalkable(validTarget.x, validTarget.y, stages[currentStageIndex])) {
+    player.targetX = validTarget.x;
+    player.targetY = validTarget.y;
+    player.isMoving = true;
+  }
+}
+
+gameCanvas.addEventListener('mousedown', handleGamePointer);
+gameCanvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  handleGamePointer(e);
+}, { passive: false });
+
+// --- TAISTELU & CUTSCENET ---
+let activeFight = null;
+let activeKingCutscene = false;
+
+function triggerOgreFight(ogreChar) {
+  const attackKey = ogreChar.attackKey || 'ogrefight.mp4';
+  const vidSrc = (assets.videos[attackKey] && assets.videos[attackKey].src) ? assets.videos[attackKey].src : attackKey;
+
+  const vid = document.createElement('video');
+  vid.src = vidSrc;
+  vid.muted = true;
+  vid.loop = true;
+  vid.playsInline = true;
+  vid.autoplay = true;
+  vid.play().catch(e => console.log('Fight video play:', e));
+
+  activeFight = {
+    ogre: ogreChar,
+    video: vid,
+    startTime: Date.now(),
+    duration: 5000
+  };
+
+  player.isMoving = false;
+  player.hidden = true;
+  ogreChar.state = 'fighting';
+
+  setTimeout(() => {
+    if (activeFight && activeFight.ogre === ogreChar) {
+      ogreChar.state = 'dead';
+      ogreChar.mediaKey = ogreChar.deathKey || 'deadogre.jpg';
+      ogreChar.isVideo = false;
+      player.hidden = false;
+      if (activeFight.video) {
+        activeFight.video.pause();
+        activeFight.video.src = '';
+      }
+      activeFight = null;
+    }
+  }, 5000);
+}
+
+function triggerKingCutscene() {
+  activeKingCutscene = true;
+  player.isMoving = false;
+  const overlay = document.getElementById('fullscreen-video-overlay');
+  const fsVideo = document.getElementById('fsVideo');
+  overlay.style.display = 'flex';
+
+  const kingKey = 'kingthanks.mp4';
+  const vidSrc = (assets.videos[kingKey] && assets.videos[kingKey].src) ? assets.videos[kingKey].src : kingKey;
+
+  fsVideo.src = vidSrc;
+  fsVideo.muted = true;
+  fsVideo.loop = false; // Toistuu vain kerran!
+  fsVideo.playsInline = true;
+  fsVideo.autoplay = true;
+  fsVideo.currentTime = 0;
+
+  const finish = () => {
+    fsVideo.pause();
+    fsVideo.src = '';
+    overlay.style.display = 'none';
+    activeKingCutscene = false;
+    returnToIntro();
+  };
+
+  fsVideo.onended = finish; // Palataan introruutuun kun video loppuu
+  fsVideo.onerror = () => {
+    console.warn('Kingthanks video ei voinut toistua, palataan introon.');
+    setTimeout(finish, 2000);
+  };
+
+  const skipBtn = document.getElementById('skipCutsceneBtn');
+  skipBtn.onclick = (e) => { e.stopPropagation(); finish(); };
+  skipBtn.ontouchstart = (e) => { e.stopPropagation(); finish(); };
+
+  fsVideo.play().catch(e => {
+    console.warn('fsVideo play error:', e);
+    setTimeout(finish, 3500);
+  });
+}
+
+function updateGame() {
+  if (activeKingCutscene) return;
+  const currentStage = stages[currentStageIndex];
+
+  if (!isWalkable(player.x, player.y, currentStage)) {
+    const safe = getNearestWalkableOnStage(player.x, player.y, currentStage);
+    player.x = safe.x;
+    player.y = safe.y;
+    player.isMoving = false;
+  }
+
+  if (player.isMoving && !player.hidden) {
+    const dx = player.targetX - player.x;
+    const dy = player.targetY - player.y;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist > player.speed) {
+      const stepX = (dx / dist) * player.speed;
+      const stepY = (dy / dist) * player.speed;
+
+      if (isWalkable(player.x + stepX, player.y + stepY, currentStage)) {
+        player.x += stepX;
+        player.y += stepY;
+      } else if (Math.abs(stepX) > 0.1 && isWalkable(player.x + stepX, player.y, currentStage)) {
+        player.x += stepX;
+      } else if (Math.abs(stepY) > 0.1 && isWalkable(player.x, player.y + stepY, currentStage)) {
+        player.y += stepY;
+      } else {
+        player.isMoving = false;
+      }
+
+      if (Math.abs(dy) > Math.abs(dx)) {
+        player.facing = dy > 0 ? 'front' : 'back';
+      } else {
+        player.facing = dx > 0 ? 'right' : 'left';
+      }
+    } else {
+      if (isWalkable(player.targetX, player.targetY, currentStage)) {
+        player.x = player.targetX;
+        player.y = player.targetY;
+      }
+      player.isMoving = false;
+    }
+  }
+
+  // Kolikoiden kerääminen
+  if (!player.hidden && currentStage.coinBags) {
+    currentStage.coinBags.forEach(bag => {
+      if (!bag.collected) {
+        const dist = Math.hypot(player.x - bag.x, player.y - bag.y);
+        if (dist < 45) {
+          bag.collected = true;
+          player.coins += (bag.amount || 44);
+          updateCoinCounterUI();
+        }
+      }
+    });
+  }
+
+  // Tarkista hahmot
+  const now = Date.now();
+  if (!player.hidden && now > player.entryGraceUntil) {
+    currentStage.characters.forEach(ch => {
+      const dist = Math.hypot(player.x - ch.x, player.y - ch.y);
+      if (ch.type === 'enemy' && ch.state !== 'dead' && ch.state !== 'fighting' && dist < 55) {
+        triggerOgreFight(ch);
+      } else if ((ch.type === 'king' || ch.name.toLowerCase().includes('king')) && dist < 75 && !activeKingCutscene) {
+        if (player.coins >= 200) {
+          triggerKingCutscene();
+        } else {
+          ch.text = "Good job. Did you get my gold?";
+        }
+      }
+    });
+  }
+
+  // Tarkista siirtymät
+  if (now > player.warpCooldownUntil && currentStage.pathBoxes && !player.hidden) {
+    for (let box of currentStage.pathBoxes) {
+      if (
+        player.x >= box.x && player.x <= box.x + box.w &&
+        player.y >= box.y && player.y <= box.y + box.h
+      ) {
+        triggerStageWarp(box);
+        break;
+      }
+    }
+  }
+}
+
+function triggerStageWarp(sourceBox) {
+  if (sourceBox.targetStage < 0 || sourceBox.targetStage >= stages.length) return;
+  player.warpCooldownUntil = Date.now() + 3000;
+  player.entryGraceUntil = Date.now() + 2000;
+  player.isMoving = false;
+
+  fadeTransition(() => {
+    currentStageIndex = sourceBox.targetStage;
+    const nextStage = stages[currentStageIndex];
+
+    const targetBox = nextStage.pathBoxes.find(b => b.id === sourceBox.targetBoxId);
+    let targetX = 150, targetY = 500;
+    if (targetBox) {
+      targetX = targetBox.x + targetBox.w / 2;
+      targetY = targetBox.y + targetBox.h / 2;
+      if (targetBox.x <= 70) targetX += 90;
+      else if (targetBox.x >= STAGE_SIZE - 150) targetX -= 90;
+      if (targetBox.y <= 70) targetY += 90;
+      else if (targetBox.y >= STAGE_SIZE - 150) targetY -= 90;
+    }
+
+    const safePoint = getNearestWalkableOnStage(targetX, targetY, nextStage);
+    player.x = safePoint.x;
+    player.y = safePoint.y;
+    player.targetX = player.x;
+    player.targetY = player.y;
+  });
+}
+
+function drawDefaultPlayer(ctx, drawW, drawH) {
+  const radX = drawW * 0.28;
+  const radY = drawH * 0.40;
+
+  ctx.save();
+  ctx.translate(0, -radY);
+
+  const grad = ctx.createRadialGradient(0, 0, radX * 0.15, 0, 0, radX);
+  grad.addColorStop(0, '#00e5ff');
+  grad.addColorStop(0.35, '#80f3ff');
+  grad.addColorStop(0.75, '#ffffff');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, radX, radY, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawPlayer(ctx, stage) {
+  if (player.hidden) return;
+
+  const t = Math.max(0, Math.min(1, player.y / STAGE_SIZE));
+  const currentScale = stage.scaleTop + t * (stage.scaleBottom - stage.scaleTop);
+
+  const baseW = 130;
+  const baseH = 190;
+  const drawW = baseW * currentScale;
+  const drawH = baseH * currentScale;
+
+  let assetKey = '';
+  let isVideo = player.isMoving;
+
+  if (isVideo) {
+    if (player.facing === 'front') assetKey = 'playerwalkfront.mp4';
+    else if (player.facing === 'back') assetKey = 'playerwalkback.mp4';
+    else assetKey = 'playerwalkside.mp4';
+  } else {
+    if (player.facing === 'front') assetKey = 'playerstandfront.jpg';
+    else if (player.facing === 'back') assetKey = 'playerstandback.jpg';
+    else assetKey = 'playerstandside.jpg';
+  }
+
+  const media = isVideo ? assets.videos[assetKey] : assets.images[assetKey];
+  const flip = player.facing === 'right';
+
+  ctx.save();
+  ctx.translate(player.x, player.y);
+  if (flip) ctx.scale(-1, 1);
+
+  if (isVideo && media && media.readyState >= 2) {
+    scratchCanvas.width = media.videoWidth || baseW;
+    scratchCanvas.height = media.videoHeight || baseH;
+    scratchCtx.drawImage(media, 0, 0);
+    removeWhiteFromCanvas(scratchCtx, scratchCanvas.width, scratchCanvas.height);
+    ctx.drawImage(scratchCanvas, -drawW / 2, -drawH, drawW, drawH);
+  } else if (!isVideo && media) {
+    ctx.drawImage(media, -drawW / 2, -drawH, drawW, drawH);
+  } else {
+    drawDefaultPlayer(ctx, drawW, drawH);
+  }
+
+  ctx.restore();
+}
+
+function drawStageCharacters(ctx, stage) {
+  const stageMultiplier = stage.charScale || 1.0;
+
+  stage.characters.forEach(ch => {
+    if (ch.state === 'fighting') return;
+
+    const t = Math.max(0, Math.min(1, ch.y / STAGE_SIZE));
+    const perspectiveScale = stage.scaleTop + t * (stage.scaleBottom - stage.scaleTop);
+    const individualScale = ch.scale || 1.0;
+    const finalScale = perspectiveScale * stageMultiplier * individualScale;
+
+    const w = 120 * finalScale;
+    const h = 180 * finalScale;
+
+    ctx.save();
+    ctx.translate(ch.x, ch.y);
+    if (ch.flipped) ctx.scale(-1, 1);
+
+    const media = ch.customMedia || (ch.isVideo ? assets.videos[ch.mediaKey] : assets.images[ch.mediaKey]);
+
+    if (ch.isVideo && media && media.readyState >= 2) {
+      scratchCanvas.width = media.videoWidth || 120;
+      scratchCanvas.height = media.videoHeight || 180;
+      scratchCtx.drawImage(media, 0, 0);
+      removeWhiteFromCanvas(scratchCtx, scratchCanvas.width, scratchCanvas.height);
+      ctx.drawImage(scratchCanvas, -w/2, -h, w, h);
+    } else if (media) {
+      ctx.drawImage(media, -w/2, -h, w, h);
+    } else {
+      ctx.fillStyle = ch.type === 'enemy' ? '#a32a2a' : '#2a6fa3';
+      ctx.fillRect(-w/3, -h, (w*2)/3, h);
+      ctx.fillStyle = '#fff';
+      ctx.font = '12px sans-serif';
+      ctx.fillText(ch.name, -w/3, -h + 15);
+    }
+    ctx.restore();
+
+    if (ch.text && !player.hidden) {
+      const dist = Math.hypot(player.x - ch.x, player.y - ch.y);
+      if (dist < 110) {
+        ctx.save();
+        ctx.font = 'bold 15px Georgia';
+        const txtW = ctx.measureText(ch.text).width;
+        const bubbleX = ch.x - txtW/2 - 10;
+        const bubbleY = ch.y - h - 35;
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+        ctx.strokeStyle = '#221100';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(bubbleX, bubbleY, txtW + 20, 28, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#000';
+        ctx.fillText(ch.text, bubbleX + 10, bubbleY + 19);
+        ctx.restore();
+      }
+    }
+  });
+}
+
+function drawCoinBags(ctx, stage) {
+  if (!stage.coinBags) return;
+  const coinImg = assets.images['coins.jpg'];
+
+  stage.coinBags.forEach(bag => {
+    if (bag.collected) return;
+    const t = Math.max(0, Math.min(1, bag.y / STAGE_SIZE));
+    const sc = stage.scaleTop + t * (stage.scaleBottom - stage.scaleTop);
+    const size = 52 * sc;
+
+    ctx.save();
+    ctx.translate(bag.x, bag.y);
+    if (coinImg) {
+      ctx.drawImage(coinImg, -size / 2, -size, size, size);
+    } else {
+      ctx.fillStyle = '#ffd700';
+      ctx.beginPath();
+      ctx.arc(0, -size / 2, size / 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#b8860b';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#000';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('💰', 0, -size / 2 + 5);
+    }
+    ctx.restore();
+  });
+}
+
+function renderGame() {
+  updateGame();
+  const stage = stages[currentStageIndex];
+  gCtx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
+
+  const bg = getStageBg(stage);
+  if (bg) {
+    gCtx.drawImage(bg, 0, 0, STAGE_SIZE, STAGE_SIZE);
+  } else {
+    gCtx.fillStyle = '#1c130d';
+    gCtx.fillRect(0, 0, STAGE_SIZE, STAGE_SIZE);
+  }
+
+  drawCoinBags(gCtx, stage);
+  drawStageCharacters(gCtx, stage);
+  drawPlayer(gCtx, stage);
+
+  // Taisteluanimaatio ogrefight.mp4
+  if (activeFight) {
+    const fw = activeFight.ogre.fightSize || 320;
+    const fh = fw;
+    const animX = player.x;
+    const animY = player.y;
+    const v = activeFight.video;
+
+    if (v && v.readyState >= 2 && v.videoWidth > 0) {
+      scratchCanvas.width = v.videoWidth;
+      scratchCanvas.height = v.videoHeight;
+      scratchCtx.drawImage(v, 0, 0);
+      removeWhiteFromCanvas(scratchCtx, scratchCanvas.width, scratchCanvas.height);
+      gCtx.drawImage(scratchCanvas, animX - fw/2, animY - fh * 0.85, fw, fh);
+    } else {
+      const elapsed = Date.now() - activeFight.startTime;
+      const pulse = Math.sin(elapsed / 120) * 16;
+      gCtx.save();
+      gCtx.fillStyle = 'rgba(255, 45, 0, 0.45)';
+      gCtx.beginPath();
+      gCtx.arc(animX, animY - fh/2, (fw/2) + pulse, 0, Math.PI * 2);
+      gCtx.fill();
+      gCtx.fillStyle = '#fff';
+      gCtx.strokeStyle = '#000';
+      gCtx.lineWidth = 3;
+      gCtx.font = 'bold 30px Cinzel Decorative';
+      gCtx.textAlign = 'center';
+      gCtx.strokeText("⚔️ FIGHT! ⚔️", animX, animY - fh/2);
+      gCtx.fillText("⚔️ FIGHT! ⚔️", animX, animY - fh/2);
+      gCtx.restore();
+    }
+  }
+
+  // Invisible Area (Etualan peitto)
+  if (stage.invisMask && bg) {
+    const occlCanvas = document.createElement('canvas');
+    occlCanvas.width = STAGE_SIZE; occlCanvas.height = STAGE_SIZE;
+    const octx = occlCanvas.getContext('2d');
+    octx.drawImage(bg, 0, 0, STAGE_SIZE, STAGE_SIZE);
+    octx.globalCompositeOperation = 'destination-in';
+    octx.drawImage(stage.invisMask, 0, 0);
+
+    gCtx.drawImage(occlCanvas, 0, 0);
+  }
+
+  if (player.isMoving && !player.hidden) {
+    gCtx.strokeStyle = 'rgba(0, 229, 255, 0.6)';
+    gCtx.lineWidth = 2.5;
+    gCtx.beginPath();
+    gCtx.arc(player.targetX, player.targetY, 9, 0, Math.PI * 2);
+    gCtx.stroke();
+  }
+
+  requestAnimationFrame(renderGame);
+}
+
+// --- KENTTÄEDITORIN LOGIIKKA ---
+const editCanvas = document.getElementById('editCanvas');
+const eCtx = editCanvas.getContext('2d');
+
+function renderStageTabs() {
+  const container = document.getElementById('stageTabsList');
+  container.innerHTML = '';
+  stages.forEach((st, idx) => {
+    const btn = document.createElement('button');
+    btn.className = `tab-btn ${idx === currentStageIndex ? 'active' : ''}`;
+    btn.textContent = st.name || `Stage ${idx + 1}`;
+    btn.addEventListener('click', () => {
+      currentStageIndex = idx;
+      editState.selectedBox = null;
+      editState.selectedChar = null;
+      editState.selectedCoinBag = null;
+      renderStageTabs();
+      updateEditorUI();
+      renderEditor();
+    });
+    container.appendChild(btn);
+  });
+}
+
+function updateEditorUI() {
+  const stage = stages[currentStageIndex];
+  document.getElementById('stageNameInput').value = stage.name;
+  document.getElementById('scaleTop').value = stage.scaleTop;
+  document.getElementById('scaleTopVal').textContent = stage.scaleTop;
+  document.getElementById('scaleBottom').value = stage.scaleBottom;
+  document.getElementById('scaleBottomVal').textContent = stage.scaleBottom;
+
+  document.getElementById('stageCharScale').value = stage.charScale || 1.0;
+  document.getElementById('stageCharScaleVal').textContent = (stage.charScale || 1.0).toFixed(2);
+  
+  const sizeControls = document.getElementById('boxSizeControls');
+  if (editState.selectedBox) {
+    sizeControls.style.display = 'block';
+    document.getElementById('boxWidth').value = editState.selectedBox.w;
+    document.getElementById('boxWidthVal').textContent = editState.selectedBox.w;
+    document.getElementById('boxHeight').value = editState.selectedBox.h;
+    document.getElementById('boxHeightVal').textContent = editState.selectedBox.h;
+  } else {
+    sizeControls.style.display = 'none';
+  }
+
+  const selectedCharBox = document.getElementById('selectedCharBox');
+  if (editState.selectedChar) {
+    selectedCharBox.style.display = 'block';
+    const sc = editState.selectedChar.scale || 1.0;
+    document.getElementById('charScale').value = sc;
+    document.getElementById('charScaleVal').textContent = sc.toFixed(2);
+
+    const ogreGroup = document.getElementById('ogreAnimSizeGroup');
+    if (editState.selectedChar.type === 'enemy') {
+      ogreGroup.style.display = 'block';
+      const fz = editState.selectedChar.fightSize || 320;
+      document.getElementById('ogreAnimSize').value = fz;
+      document.getElementById('ogreAnimSizeVal').textContent = fz;
+    } else {
+      ogreGroup.style.display = 'none';
+    }
+
+    const textGroup = document.getElementById('charTextEditGroup');
+    if (editState.selectedChar.type === 'npc') {
+      textGroup.style.display = 'block';
+      document.getElementById('charTextInput').value = editState.selectedChar.text || '';
+    } else {
+      textGroup.style.display = 'none';
+    }
+  } else {
+    selectedCharBox.style.display = 'none';
+  }
+
+  const selectedCoinBox = document.getElementById('selectedCoinBagBox');
+  if (editState.selectedCoinBag) {
+    selectedCoinBox.style.display = 'block';
+    document.getElementById('coinBagAmountInput').value = editState.selectedCoinBag.amount || 44;
+  } else {
+    selectedCoinBox.style.display = 'none';
+  }
+
+  renderPathBoxesList();
+  renderCharList();
+  renderCoinBagList();
+}
+
+document.getElementById('stageNameInput').addEventListener('input', (e) => {
+  stages[currentStageIndex].name = e.target.value.trim() || `Stage ${currentStageIndex + 1}`;
+  renderStageTabs();
+});
+
+document.getElementById('stageCharScale').addEventListener('input', (e) => {
+  const val = parseFloat(e.target.value);
+  stages[currentStageIndex].charScale = val;
+  document.getElementById('stageCharScaleVal').textContent = val.toFixed(2);
+  renderEditor();
+});
+
+document.getElementById('charScale').addEventListener('input', (e) => {
+  if (editState.selectedChar) {
+    const val = parseFloat(e.target.value);
+    editState.selectedChar.scale = val;
+    document.getElementById('charScaleVal').textContent = val.toFixed(2);
+    renderEditor();
+  }
+});
+
+document.getElementById('ogreAnimSize').addEventListener('input', (e) => {
+  if (editState.selectedChar) {
+    const val = parseInt(e.target.value);
+    editState.selectedChar.fightSize = val;
+    document.getElementById('ogreAnimSizeVal').textContent = val;
+  }
+});
+
+document.getElementById('charTextInput').addEventListener('input', (e) => {
+  if (editState.selectedChar) {
+    editState.selectedChar.text = e.target.value;
+  }
+});
+
+document.getElementById('coinBagAmountInput').addEventListener('input', (e) => {
+  if (editState.selectedCoinBag) {
+    editState.selectedCoinBag.amount = parseInt(e.target.value) || 0;
+    renderCoinBagList();
+    renderEditor();
+  }
+});
+
+document.getElementById('clearMoveBtn').addEventListener('click', () => {
+  if (confirm("Tyhjennetäänkö koko liikkuma-alue tältä kentältä?")) {
+    const ctx = stages[currentStageIndex].moveMask.getContext('2d');
+    ctx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
+    renderEditor();
+  }
+});
+
+function renderPathBoxesList() {
+  const stage = stages[currentStageIndex];
+  const list = document.getElementById('pathBoxesList');
+  list.innerHTML = '';
+  stage.pathBoxes.forEach((box, idx) => {
+    const isSel = editState.selectedBox === box;
+    const div = document.createElement('div');
+    div.className = `path-item ${isSel ? 'selected' : ''}`;
+    div.innerHTML = `
+      <div style="cursor:pointer;" onclick="selectPathBox(${idx})">
+        <strong>Box #${box.id}</strong> (X:${Math.round(box.x)}, Y:${Math.round(box.y)}, W:${box.w}, H:${box.h})
+      </div>
+      <label>Vie Kenttään: 
+        <select onchange="stages[${currentStageIndex}].pathBoxes[${idx}].targetStage = parseInt(this.value)">
+          ${stages.map((st, s) => `<option value="${s}" ${box.targetStage===s?'selected':''}>${st.name}</option>`).join('')}
+        </select>
+      </label>
+      <label>Kohde Box ID: 
+        <input type="number" style="width:65px" value="${box.targetBoxId}" onchange="stages[${currentStageIndex}].pathBoxes[${idx}].targetBoxId = parseInt(this.value)">
+      </label>
+    `;
+    list.appendChild(div);
+  });
+}
+
+window.selectPathBox = function(idx) {
+  editState.selectedBox = stages[currentStageIndex].pathBoxes[idx];
+  updateEditorUI();
+  renderEditor();
+};
+
+function renderCharList() {
+  const stage = stages[currentStageIndex];
+  const container = document.getElementById('charList');
+  if (stage.characters.length === 0) {
+    container.innerHTML = '<i>Ei hahmoja tällä kentällä.</i>';
+    return;
+  }
+  container.innerHTML = stage.characters.map((c, i) => `
+    <div style="cursor:pointer; padding:3px; background:${editState.selectedChar===c?'#523b18':'transparent'};" onclick="selectChar(${i})">
+      • [${c.type.toUpperCase()}] ${c.name} (X:${Math.round(c.x)}, Y:${Math.round(c.y)})
+    </div>
+  `).join('');
+}
+
+window.selectChar = function(idx) {
+  editState.selectedChar = stages[currentStageIndex].characters[idx];
+  updateEditorUI();
+  renderEditor();
+};
+
+function renderCoinBagList() {
+  const stage = stages[currentStageIndex];
+  const container = document.getElementById('coinBagList');
+  if (!stage.coinBags || stage.coinBags.length === 0) {
+    container.innerHTML = '<i>Ei kolikkopusseja tällä kentällä.</i>';
+    return;
+  }
+  container.innerHTML = stage.coinBags.map((b, i) => `
+    <div style="cursor:pointer; padding:3px; background:${editState.selectedCoinBag===b?'#523b18':'transparent'};" onclick="selectCoinBag(${i})">
+      • Pussi #${i+1}: ${b.amount} 🪙 (X:${Math.round(b.x)}, Y:${Math.round(b.y)})
+    </div>
+  `).join('');
+}
+
+window.selectCoinBag = function(idx) {
+  editState.selectedCoinBag = stages[currentStageIndex].coinBags[idx];
+  updateEditorUI();
+  renderEditor();
+};
+
+function renderEditor() {
+  const stage = stages[currentStageIndex];
+  eCtx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
+
+  const bg = getStageBg(stage);
+  if (bg) {
+    eCtx.drawImage(bg, 0, 0, STAGE_SIZE, STAGE_SIZE);
+  } else {
+    eCtx.fillStyle = '#140c06';
+    eCtx.fillRect(0, 0, STAGE_SIZE, STAGE_SIZE);
+  }
+
+  if (stage.moveMask) {
+    eCtx.save();
+    eCtx.globalAlpha = 0.38;
+    eCtx.drawImage(stage.moveMask, 0, 0);
+    eCtx.restore();
+  }
+
+  if (stage.invisMask) {
+    eCtx.save();
+    eCtx.globalAlpha = 0.45;
+    eCtx.drawImage(stage.invisMask, 0, 0);
+    eCtx.restore();
+  }
+
+  // Kolikkopussit editorissa
+  if (stage.coinBags) {
+    const coinImg = assets.images['coins.jpg'];
+    stage.coinBags.forEach(bag => {
+      const isSel = editState.selectedCoinBag === bag;
+      eCtx.save();
+      eCtx.translate(bag.x, bag.y);
+      if (coinImg) {
+        eCtx.drawImage(coinImg, -26, -52, 52, 52);
+      } else {
+        eCtx.fillStyle = '#ffd700';
+        eCtx.beginPath();
+        eCtx.arc(0, -20, 20, 0, Math.PI * 2);
+        eCtx.fill();
+      }
+      if (isSel) {
+        eCtx.strokeStyle = '#00ffff';
+        eCtx.lineWidth = 3;
+        eCtx.strokeRect(-28, -54, 56, 56);
+      }
+      eCtx.fillStyle = '#fff';
+      eCtx.strokeStyle = '#000';
+      eCtx.lineWidth = 3;
+      eCtx.font = 'bold 14px sans-serif';
+      eCtx.strokeText(`${bag.amount}🪙`, -15, 12);
+      eCtx.fillText(`${bag.amount}🪙`, -15, 12);
+      eCtx.restore();
+    });
+  }
+
+  // Hahmot editorissa
+  const stageMultiplier = stage.charScale || 1.0;
+  stage.characters.forEach(ch => {
+    const isSel = editState.selectedChar === ch;
+    const r = 25 * stageMultiplier * (ch.scale || 1.0);
+
+    eCtx.save();
+    eCtx.translate(ch.x, ch.y);
+    if (ch.flipped) eCtx.scale(-1, 1);
+    eCtx.fillStyle = ch.type === 'enemy' ? '#ff3b30' : '#34c759';
+    eCtx.strokeStyle = isSel ? '#ffeb3b' : '#000';
+    eCtx.lineWidth = isSel ? 4 : 2;
+    eCtx.beginPath();
+    eCtx.arc(0, -r, r, 0, Math.PI * 2);
+    eCtx.fill();
+    eCtx.stroke();
+    eCtx.restore();
+
+    eCtx.fillStyle = '#fff';
+    eCtx.font = 'bold 13px sans-serif';
+    eCtx.fillText(`${ch.name}`, ch.x - 20, ch.y - r * 2 - 10);
+  });
+
+  // Path Boxit
+  stage.pathBoxes.forEach(box => {
+    const isSel = editState.selectedBox === box;
+    eCtx.fillStyle = isSel ? 'rgba(255, 235, 59, 0.45)' : 'rgba(255, 140, 0, 0.45)';
+    eCtx.strokeStyle = isSel ? '#ffeb3b' : '#ff9800';
+    eCtx.lineWidth = isSel ? 4 : 2.5;
+    eCtx.fillRect(box.x, box.y, box.w, box.h);
+    eCtx.strokeRect(box.x, box.y, box.w, box.h);
+
+    eCtx.fillStyle = '#ffe600';
+    eCtx.beginPath();
+    eCtx.arc(box.x + box.w / 2, box.y + box.h / 2, 8, 0, Math.PI * 2);
+    eCtx.fill();
+
+    eCtx.fillStyle = '#fff';
+    eCtx.font = 'bold 14px sans-serif';
+    const targetName = stages[box.targetStage] ? stages[box.targetStage].name : `S${box.targetStage+1}`;
+    eCtx.fillText(`-> ${targetName}`, box.x + 6, box.y + 20);
+  });
+}
+
+function getEditorCoords(e) {
+  const rect = editCanvas.getBoundingClientRect();
+  const scale = STAGE_SIZE / rect.width;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return {
+    x: (clientX - rect.left) * scale,
+    y: (clientY - rect.top) * scale
+  };
+}
+
+function strokePaintLine(x1, y1, x2, y2) {
+  const stage = stages[currentStageIndex];
+  if (editState.mode === 'erase') {
+    [stage.moveMask, stage.invisMask].forEach(m => {
+      const c = m.getContext('2d');
+      c.globalCompositeOperation = 'destination-out';
+      c.lineCap = 'round';
+      c.lineJoin = 'round';
+      c.lineWidth = editState.brushSize * 2;
+      c.beginPath();
+      c.moveTo(x1, y1);
+      c.lineTo(x2, y2);
+      c.stroke();
+      c.globalCompositeOperation = 'source-over';
+    });
+  } else {
+    let ctx = null;
+    if (editState.mode === 'move') ctx = stage.moveMask.getContext('2d');
+    else if (editState.mode === 'invis') ctx = stage.invisMask.getContext('2d');
+
+    if (ctx) {
+      ctx.fillStyle = editState.mode === 'move' ? '#00ff44' : '#0099ff';
+      ctx.strokeStyle = editState.mode === 'move' ? '#00ff44' : '#0099ff';
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = editState.brushSize * 2;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+  }
+}
+
+function handleEditorPointerDown(e) {
+  editState.isInteracting = true;
+  const { x, y } = getEditorCoords(e);
+  editState.lastDrawX = x;
+  editState.lastDrawY = y;
+  const stage = stages[currentStageIndex];
+
+  if (editState.mode === 'movePath') {
+    for (let i = stage.pathBoxes.length - 1; i >= 0; i--) {
+      const box = stage.pathBoxes[i];
+      if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) {
+        editState.draggedBox = box;
+        editState.selectedBox = box;
+        editState.dragOffset.x = x - box.x;
+        editState.dragOffset.y = y - box.y;
+        updateEditorUI();
+        break;
+      }
+    }
+  } else if (editState.mode === 'moveChar') {
+    for (let i = stage.characters.length - 1; i >= 0; i--) {
+      const ch = stage.characters[i];
+      if (Math.hypot(x - ch.x, y - ch.y) < 45) {
+        editState.draggedChar = ch;
+        editState.selectedChar = ch;
+        editState.dragOffset.x = x - ch.x;
+        editState.dragOffset.y = y - ch.y;
+        updateEditorUI();
+        break;
+      }
+    }
+  } else if (editState.mode === 'moveCoin') {
+    for (let i = (stage.coinBags || []).length - 1; i >= 0; i--) {
+      const bag = stage.coinBags[i];
+      if (Math.hypot(x - bag.x, y - bag.y) < 35) {
+        editState.draggedCoinBag = bag;
+        editState.selectedCoinBag = bag;
+        editState.dragOffset.x = x - bag.x;
+        editState.dragOffset.y = y - bag.y;
+        updateEditorUI();
+        break;
+      }
+    }
+  } else if (editState.mode === 'move' || editState.mode === 'invis' || editState.mode === 'erase') {
+    strokePaintLine(x, y, x, y);
+    renderEditor();
+  }
+}
+
+function handleEditorPointerMove(e) {
+  if (!editState.isInteracting) return;
+  const { x, y } = getEditorCoords(e);
+
+  if (editState.mode === 'movePath' && editState.draggedBox) {
+    let newX = Math.round(x - editState.dragOffset.x);
+    let newY = Math.round(y - editState.dragOffset.y);
+    newX = Math.max(0, Math.min(STAGE_SIZE - editState.draggedBox.w, newX));
+    newY = Math.max(0, Math.min(STAGE_SIZE - editState.draggedBox.h, newY));
+    editState.draggedBox.x = newX;
+    editState.draggedBox.y = newY;
+    renderPathBoxesList();
+    renderEditor();
+  } else if (editState.mode === 'moveChar' && editState.draggedChar) {
+    editState.draggedChar.x = Math.max(20, Math.min(STAGE_SIZE - 20, Math.round(x - editState.dragOffset.x)));
+    editState.draggedChar.y = Math.max(50, Math.min(STAGE_SIZE - 20, Math.round(y - editState.dragOffset.y)));
+    renderCharList();
+    renderEditor();
+  } else if (editState.mode === 'moveCoin' && editState.draggedCoinBag) {
+    editState.draggedCoinBag.x = Math.max(20, Math.min(STAGE_SIZE - 20, Math.round(x - editState.dragOffset.x)));
+    editState.draggedCoinBag.y = Math.max(50, Math.min(STAGE_SIZE - 20, Math.round(y - editState.dragOffset.y)));
+    renderCoinBagList();
+    renderEditor();
+  } else if (editState.mode === 'move' || editState.mode === 'invis' || editState.mode === 'erase') {
+    strokePaintLine(editState.lastDrawX, editState.lastDrawY, x, y);
+    editState.lastDrawX = x;
+    editState.lastDrawY = y;
+    renderEditor();
+  }
+}
+
+function handleEditorPointerUp() {
+  editState.isInteracting = false;
+  editState.draggedBox = null;
+  editState.draggedChar = null;
+  editState.draggedCoinBag = null;
+}
+
+editCanvas.addEventListener('mousedown', handleEditorPointerDown);
+window.addEventListener('mousemove', handleEditorPointerMove);
+window.addEventListener('mouseup', handleEditorPointerUp);
+
+editCanvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  handleEditorPointerDown(e);
+}, { passive: false });
+
+window.addEventListener('touchmove', (e) => {
+  if (editState.isInteracting) {
+    e.preventDefault();
+    handleEditorPointerMove(e);
+  }
+}, { passive: false });
+
+window.addEventListener('touchend', handleEditorPointerUp);
+
+const tools = [
+  { id: 'paintMoveBtn', mode: 'move' },
+  { id: 'paintInvisBtn', mode: 'invis' },
+  { id: 'eraseBtn', mode: 'erase' },
+  { id: 'movePathBtn', mode: 'movePath' },
+  { id: 'moveCharBtn', mode: 'moveChar' },
+  { id: 'moveCoinBagBtn', mode: 'moveCoin' }
+];
+
+tools.forEach(t => {
+  const btn = document.getElementById(t.id);
+  btn.addEventListener('click', () => {
+    tools.forEach(o => document.getElementById(o.id).classList.remove('active'));
+    if (editState.mode === t.mode) {
+      editState.mode = null;
+    } else {
+      editState.mode = t.mode;
+      btn.classList.add('active');
+    }
+  });
+});
+
+document.getElementById('boxWidth').addEventListener('input', (e) => {
+  if (editState.selectedBox) {
+    editState.selectedBox.w = parseInt(e.target.value);
+    document.getElementById('boxWidthVal').textContent = editState.selectedBox.w;
+    renderPathBoxesList();
+    renderEditor();
+  }
+});
+
+document.getElementById('boxHeight').addEventListener('input', (e) => {
+  if (editState.selectedBox) {
+    editState.selectedBox.h = parseInt(e.target.value);
+    document.getElementById('boxHeightVal').textContent = editState.selectedBox.h;
+    renderPathBoxesList();
+    renderEditor();
+  }
+});
+
+// Kolikkopussin lisäys ja poisto
+document.getElementById('addCoinBagBtn').addEventListener('click', () => {
+  const stage = stages[currentStageIndex];
+  if (!stage.coinBags) stage.coinBags = [];
+  const newBag = {
+    id: 'bag_' + Date.now(),
+    x: 500,
+    y: 500,
+    amount: 44,
+    collected: false
+  };
+  stage.coinBags.push(newBag);
+  editState.selectedCoinBag = newBag;
+  updateEditorUI();
+  renderEditor();
+});
+
+document.getElementById('removeCoinBagBtn').addEventListener('click', () => {
+  const stage = stages[currentStageIndex];
+  if (editState.selectedCoinBag && stage.coinBags) {
+    stage.coinBags = stage.coinBags.filter(b => b !== editState.selectedCoinBag);
+    editState.selectedCoinBag = null;
+    updateEditorUI();
+    renderEditor();
+  } else {
+    alert("Valitse ensin kolikkopussi!");
+  }
+});
+
+document.getElementById('addStageBtn').addEventListener('click', () => {
+  const newIdx = stages.length;
+  const newSt = createStageData(`stage${newIdx+1}`, `Stage ${newIdx+1}`);
+  stages.push(newSt);
+  currentStageIndex = stages.length - 1;
+  renderStageTabs();
+  updateEditorUI();
+  renderEditor();
+});
+
+document.getElementById('removeStageBtn').addEventListener('click', () => {
+  if (stages.length <= 1) return alert("Kenttiä täytyy olla vähintään yksi!");
+  if (confirm(`Poistetaanko kenttä "${stages[currentStageIndex].name}"?`)) {
+    stages.splice(currentStageIndex, 1);
+    if (currentStageIndex >= stages.length) currentStageIndex = stages.length - 1;
+    renderStageTabs();
+    updateEditorUI();
+    renderEditor();
+  }
+});
+
+document.getElementById('flipCharBtn').addEventListener('click', () => {
+  if (editState.selectedChar) {
+    editState.selectedChar.flipped = !editState.selectedChar.flipped;
+    renderEditor();
+  } else {
+    alert("Valitse ensin hahmo klikkaamalla sitä!");
+  }
+});
+
+document.getElementById('removeCharBtn').addEventListener('click', () => {
+  if (editState.selectedChar) {
+    const stage = stages[currentStageIndex];
+    stage.characters = stage.characters.filter(c => c !== editState.selectedChar);
+    editState.selectedChar = null;
+    updateEditorUI();
+    renderEditor();
+  } else {
+    alert("Valitse ensin hahmo!");
+  }
+});
+
+const charModal = document.getElementById('charModal');
+document.getElementById('addCharBtn').addEventListener('click', () => {
+  charModal.style.display = 'flex';
+});
+
+document.getElementById('modalCancelBtn').addEventListener('click', () => {
+  charModal.style.display = 'none';
+});
+
+document.getElementById('modalCharType').addEventListener('change', (e) => {
+  const isEnemy = e.target.value === 'enemy';
+  document.getElementById('modalEnemyFields').style.display = isEnemy ? 'block' : 'none';
+  document.getElementById('modalNpcFields').style.display = isEnemy ? 'none' : 'block';
+});
+
+document.getElementById('modalPresetSelect').addEventListener('change', (e) => {
+  const val = e.target.value;
+  const typeSelect = document.getElementById('modalCharType');
+  const npcText = document.getElementById('modalNpcText');
+
+  if (val === 'ogre') {
+    typeSelect.value = 'enemy';
+  } else {
+    typeSelect.value = 'npc';
+    if (val === 'peasant1') npcText.value = 'I heard there is an ogre in the castle.';
+    else if (val === 'peasant2') npcText.value = 'Please, save the king!';
+    else if (val === 'peasant3') npcText.value = 'Can you help the kingdom?';
+    else if (val === 'spirit') npcText.value = 'There is too much evil.';
+    else if (val === 'lady') npcText.value = 'Collecting taxes again?';
+    else if (val === 'wizard') npcText.value = 'The king wants his 200 coins.';
+  }
+  typeSelect.dispatchEvent(new Event('change'));
+});
+
+document.getElementById('modalSaveBtn').addEventListener('click', () => {
+  const type = document.getElementById('modalCharType').value;
+  const preset = document.getElementById('modalPresetSelect').value;
+  const idleFile = document.getElementById('modalIdleFileInput').files[0];
+  const npcText = document.getElementById('modalNpcText').value;
+  const fightSize = parseInt(document.getElementById('modalEnemyFightSize').value) || 320;
+
+  const isPresetVideo = (preset === 'ogre' || preset === 'lady');
+  let mediaKey = '';
+  if (preset !== 'custom') {
+    mediaKey = isPresetVideo ? preset + '.mp4' : preset + '.jpg';
+  }
+
+  const newChar = {
+    id: 'char_' + Date.now(),
+    type: type,
+    name: preset !== 'custom' ? preset : 'Custom ' + type,
+    x: 500,
+    y: 550,
+    mediaKey: mediaKey,
+    customMedia: null,
+    isVideo: isPresetVideo,
+    flipped: false,
+    scale: 1.0,
+    text: npcText,
+    attackKey: 'ogrefight.mp4',
+    deathKey: 'deadogre.jpg',
+    fightSize: fightSize,
+    state: 'idle'
+  };
+
+  if (idleFile) {
+    const url = URL.createObjectURL(idleFile);
+    if (idleFile.type.includes('video')) {
+      const v = document.createElement('video');
+      v.src = url; v.muted = true; v.loop = true; v.play().catch(()=>{});
+      newChar.customMedia = v;
+      newChar.isVideo = true;
+    } else {
+      const im = new Image();
+      im.onload = () => { newChar.customMedia = processImageWhiteRemoval(im); renderEditor(); };
+      im.src = url;
+      newChar.isVideo = false;
+    }
+  }
+
+  stages[currentStageIndex].characters.push(newChar);
+  charModal.style.display = 'none';
+  updateEditorUI();
+  renderEditor();
+});
+
+document.getElementById('brushSize').addEventListener('input', (e) => {
+  editState.brushSize = parseInt(e.target.value);
+  document.getElementById('brushSizeVal').textContent = editState.brushSize;
+});
+
+document.getElementById('scaleTop').addEventListener('input', (e) => {
+  stages[currentStageIndex].scaleTop = parseFloat(e.target.value);
+  document.getElementById('scaleTopVal').textContent = e.target.value;
+});
+
+document.getElementById('scaleBottom').addEventListener('input', (e) => {
+  stages[currentStageIndex].scaleBottom = parseFloat(e.target.value);
+  document.getElementById('scaleBottomVal').textContent = e.target.value;
+});
+
+document.getElementById('addPathBtn').addEventListener('click', () => {
+  const stage = stages[currentStageIndex];
+  const newId = Date.now() % 10000;
+  stage.pathBoxes.push({
+    id: newId,
+    x: 880, y: 400, w: 90, h: 180,
+    targetStage: (currentStageIndex + 1) % stages.length,
+    targetBoxId: 1
+  });
+  renderPathBoxesList();
+  renderEditor();
+});
+
+document.getElementById('removePathBtn').addEventListener('click', () => {
+  const stage = stages[currentStageIndex];
+  if (editState.selectedBox) {
+    stage.pathBoxes = stage.pathBoxes.filter(b => b !== editState.selectedBox);
+    editState.selectedBox = null;
+  } else if (stage.pathBoxes.length > 0) {
+    stage.pathBoxes.pop();
+  }
+  updateEditorUI();
+  renderEditor();
+});
+
+// --- TALLENNUS & LATAUS JS ---
+document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+  const serialized = stages.map(st => {
+    let customBgData = null;
+    if (st.customBg) {
+      const c = document.createElement('canvas');
+      c.width = st.customBg.width; c.height = st.customBg.height;
+      c.getContext('2d').drawImage(st.customBg, 0, 0);
+      customBgData = c.toDataURL('image/jpeg', 0.85);
+    }
+    return {
+      id: st.id,
+      name: st.name,
+      scaleTop: st.scaleTop,
+      scaleBottom: st.scaleBottom,
+      charScale: st.charScale || 1.0,
+      pathBoxes: st.pathBoxes,
+      characters: st.characters.map(ch => ({
+        id: ch.id, type: ch.type, name: ch.name, x: ch.x, y: ch.y,
+        mediaKey: ch.mediaKey, isVideo: ch.isVideo, flipped: ch.flipped,
+        scale: ch.scale || 1.0, text: ch.text, attackKey: ch.attackKey,
+        deathKey: ch.deathKey, fightSize: ch.fightSize || 320
+      })),
+      coinBags: (st.coinBags || []).map(b => ({
+        id: b.id, x: b.x, y: b.y, amount: b.amount, collected: false
+      })),
+      moveMaskData: st.moveMask.toDataURL(),
+      invisMaskData: st.invisMask.toDataURL(),
+      customBgData: customBgData
+    };
+  });
+
+  const fileContent = `/** Fantasyland Settings & Stages */\nwindow.loadFantasylandSettings = function() {\n  return ${JSON.stringify(serialized, null, 2)};\n};\n`;
+  const blob = new Blob([fileContent], { type: 'application/javascript' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'default.js';
+  a.click();
+});
+
+function applyLoadedSettings(loadedData) {
+  stages = loadedData.map((data, i) => {
+    const st = createStageData(data.id || `stage${i+1}`, data.name || `Stage ${i+1}`);
+    st.scaleTop = data.scaleTop || 0.6;
+    st.scaleBottom = data.scaleBottom || 1.3;
+    st.charScale = data.charScale || 1.0;
+    st.pathBoxes = data.pathBoxes || [];
+    st.characters = data.characters || [];
+    st.coinBags = data.coinBags || [];
+
+    if (data.moveMaskData) {
+      const imM = new Image();
+      imM.onload = () => {
+        const ctx = st.moveMask.getContext('2d');
+        ctx.clearRect(0,0,STAGE_SIZE,STAGE_SIZE);
+        ctx.drawImage(imM, 0, 0);
+        if (i === currentStageIndex) renderEditor();
+      };
+      imM.src = data.moveMaskData;
+    }
+
+    if (data.invisMaskData) {
+      const imI = new Image();
+      imI.onload = () => {
+        const ctx = st.invisMask.getContext('2d');
+        ctx.clearRect(0,0,STAGE_SIZE,STAGE_SIZE);
+        ctx.drawImage(imI, 0, 0);
+        if (i === currentStageIndex) renderEditor();
+      };
+      imI.src = data.invisMaskData;
+    }
+
+    if (data.customBgData) {
+      const imBg = new Image();
+      imBg.onload = () => {
+        st.customBg = imBg;
+        if (i === currentStageIndex) renderEditor();
+      };
+      imBg.src = data.customBgData;
+    }
+
+    return st;
+  });
+
+  currentStageIndex = 0;
+  renderStageTabs();
+  updateEditorUI();
+  renderEditor();
+}
+
+document.getElementById('loadSettingsInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const scriptCode = event.target.result;
+      const fn = new Function(scriptCode + '; return window.loadFantasylandSettings();');
+      const data = fn();
+      if (Array.isArray(data)) {
+        applyLoadedSettings(data);
+        alert('Asetukset ladattu onnistuneesti!');
+      }
+    } catch (err) {
+      alert('Virhe JS-tiedoston lukemisessa: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (typeof window.loadFantasylandSettings === 'function') {
+    try {
+      const defaultData = window.loadFantasylandSettings();
+      if (Array.isArray(defaultData)) {
+        applyLoadedSettings(defaultData);
+      }
+    } catch(e) {
+      console.warn('default.js automaattilataus epäonnistui:', e);
+    }
+  }
+});
+
+// --- RUUTUJEN VAIHDOT & EXIT ---
+const introScreen = document.getElementById('intro-screen');
+const gameScreen = document.getElementById('game-screen');
+const editScreen = document.getElementById('edit-screen');
+
+function returnToIntro() {
+  fadeTransition(() => {
+    gameScreen.style.display = 'none';
+    editScreen.style.display = 'none';
+    introScreen.style.display = 'flex';
+    player.isMoving = false;
+    player.hidden = false;
+    activeFight = null;
+    activeKingCutscene = false;
+  });
+}
+
+document.getElementById('playBtn').addEventListener('click', () => {
+  const music = document.getElementById('bgMusic');
+  music.play().catch(() => {});
+
+  fadeTransition(() => {
+    introScreen.style.display = 'none';
+    editScreen.style.display = 'none';
+    gameScreen.style.display = 'flex';
+
+    // Aloitetaan peli nollatuilla kolikoilla
+    player.coins = 0;
+    updateCoinCounterUI();
+
+    // Palautetaan kolikkopussit kentille
+    stages.forEach(st => {
+      if (st.coinBags) st.coinBags.forEach(b => b.collected = false);
+    });
+
+    const safeSpawn = getNearestWalkableOnStage(player.x, player.y, stages[currentStageIndex]);
+    player.x = safeSpawn.x;
+    player.y = safeSpawn.y;
+    player.targetX = player.x;
+    player.targetY = player.y;
+    player.entryGraceUntil = Date.now() + 2000;
+  });
+});
+
+document.getElementById('gameExitBtn').addEventListener('click', returnToIntro);
+
+document.getElementById('editBtn').addEventListener('click', () => {
+  introScreen.style.display = 'none';
+  editScreen.style.display = 'flex';
+  renderStageTabs();
+  updateEditorUI();
+  renderEditor();
+});
+
+document.getElementById('exitEditBtn').addEventListener('click', () => {
+  editScreen.style.display = 'none';
+  introScreen.style.display = 'flex';
+});
+
+// Käynnistys
+tryLoadInitialAssets();
+renderStageTabs();
+requestAnimationFrame(renderGame);
+</script>
+</body>
+</html>
